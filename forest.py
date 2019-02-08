@@ -18,7 +18,7 @@ def run_forest(data, labels, v_data, v_labels, depth):
     print(auc_err(train_result, labels))
     return auc_err(validate_result, v_labels), auc_err(train_result, labels)
 
-data, labels, v_data, v_labels = load_train("data/train_2008.csv", 1000, 20000)
+data, labels, v_data, v_labels = load_train("data/train_2008.csv", 1000, 4000)
 print("Load done!")
 accs = []
 for i in range(10,11,1):
