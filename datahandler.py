@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 from sklearn import preprocessing
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import metrics
@@ -11,11 +12,11 @@ def load_train(fname, n_validate, max_total = -1):
     X = np.loadtxt(fname, skiprows = 1, delimiter = ",")
     np.random.shuffle(X)
 
-    data = X[:max_total, 5:-1]
+    data = X[:, 5:-1]
     cols = get_categorical_cols(data, 100)
     data = make_categorical(data, cols)
     data = make_regularized(data)
-
+    data = data[:max_total]
 
     test_data = data[:n_validate]
     test_labels = X[:n_validate, -1]
@@ -71,3 +72,20 @@ def make_regularized(data):
     """regularizes all data"""
     X = np.insert(np.apply_along_axis(reg,0,data), 0, 1, axis=1)
     return X
+
+def save_model(model, fname):
+    """saves given model to file"""
+    pickle.dump( model, open( fname, "wb" ) )
+
+def load_model(fname):
+    f = open(fname, 'rb')
+    model = pickle.load(f)
+    f.close()
+    return model
+
+def save_prediction(predict_results, fname):
+    f = open(fname)
+    f.write("id,target,\n")
+    for i in range(len(predict_results)):
+        f.write(str(i) + "," + str(predict_results[i]))
+    f.close()
