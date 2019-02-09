@@ -89,3 +89,28 @@ def save_prediction(predict_results, fname):
     for i in range(len(predict_results)):
         f.write(str(i) + "," + str(predict_results[i]))
     f.close()
+
+    
+   
+
+def collect_model_stats(data, labels, v_data, 
+        v_labels, clf, clf_descriptor, verbose = True):
+    
+    train_result = clf.predict(data)
+    validate_result = clf.predict(v_data)
+    cat_result = np.floor(2 * validate_result)
+    data_output = []
+    data_output.append(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"))
+    data_output.append("Classification Error: " + str(classification_err(cat_result, v_labels)))
+    data_output.append("AUC validation: " + str(auc_err(validate_result, v_labels)))
+    data_output.append("AUC train: " + str(auc_err(train_result, labels)))
+
+    with open(clf_descriptor+".dat", 'w') as out:
+        for i in data_output:
+            out.write(i)
+            out.write('\n')
+
+    if verbose:
+        for i in data_output:
+            print(i)
+    return data_output
