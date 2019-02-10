@@ -22,21 +22,22 @@ def train_forest(data, labels, v_data, v_labels, depth, model_name):
     
     return msg
 
-def pca_modifier(n_eigen_vectors, data, labels, v_data, v_labels):
+def pca_modifier(n_eigen_vectors, depth, data, labels, v_data, v_labels):
     
     pca = PCA(n_components = n_eigen_vectors)
     pca.fit(data)
     train_features = pca.transform(data)
     test_features = pca.transform(v_data)
     train_forest(train_features, labels,
-            test_features, v_labels, i, str(n_eigen_vectors) + "random_forest_pca.model")
+            test_features, v_labels, depth, str(n_eigen_vectors) + "random_forest_pca.model")
 
 
 data, labels, v_data, v_labels = load_train("data/train_2008.csv", 10000, 40000)
 print("Load done!")
 
 for j in [i * 125 + 500 for i in range(10)]:
-    pca_modifier(j, data, labels, v_data, v_labels)
+    for depth in range(10,11,1):
+        pca_modifier(j, depth, data, labels, v_data, v_labels)
 
 
 # accs = []
