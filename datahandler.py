@@ -5,6 +5,8 @@ from sklearn import preprocessing
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import metrics
 from sklearn import compose
+from sklearn.decomposition import PCA
+import datetime
 
 def load_train(fname, n_validate, max_total = -1):
     '''loads, splits, and changes categorical data to categories for
