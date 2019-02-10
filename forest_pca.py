@@ -1,15 +1,24 @@
 from datahandler import *
+from pathlib import Path
 
 n_estimators = 1000
 
-def run_forest(data, labels, v_data, v_labels, depth):
+def train_forest(data, labels, v_data, v_labels, depth, model_name):
+    clf = None
+    savemodel = Path(model_name)
+    if savemodel.exists():
+        print("model found")
+        clf = load_model(model_name)
+    else:
+        print("training model")
+        clf = RandomForestRegressor(n_estimators = n_estimators, verbose = 1, n_jobs = 10)
+        clf.min_samples_leaf = depth
+        clf.fit(data, labels)
+        save_model(clf, model_name)
 
-    clf = RandomForestRegressor(n_estimators = n_estimators, verbose = 1, n_jobs = 10)
-    clf.min_samples_leaf = depth
-    clf.fit(data, labels)
 
     msg = collect_model_stats(data, labels, v_data, v_labels, clf, 
-        "random forest_pca" + str(n_estimators), verbose = True)
+        model_name, verbose = True)
     
     return msg
 
@@ -26,5 +35,6 @@ test_features = pca.transform(v_data)
 accs = []
 for i in range(10,11,1):
     print(i)
-    accs.append((i,run_forest(train_features, labels, test_features, v_labels, i)))
+    accs.append((i,train_forest(train_features, labels, 
+        test_features, v_labels, i, "random_forest_pca.model")))
 
