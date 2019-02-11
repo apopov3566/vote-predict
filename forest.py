@@ -28,7 +28,9 @@ train_data, train_labels, v_data, v_labels, test1_data, test2_data = load_all(10
 print(len(train_data[0]))
 
 print("Load done!")
-m = train_forest(train_data[:2000], train_labels[:2000], 15, 1000)
-save_model(m, 'submit1.model')
-#m = load_model('m1.model')
-eval_forest(m, train_data[:2000], train_labels[:2000], v_data, v_labels)
+#m = train_forest(train_data, train_labels, 15, 2000)
+#save_model(m, 'submit1.model')
+m = load_model('submit1.model')
+eval_forest(m, train_data, train_labels, v_data, v_labels)
+predict_forest(m, test1_data, "data/2008sub1.csv")
+predict_forest(m, test2_data, "data/2012sub1.csv")

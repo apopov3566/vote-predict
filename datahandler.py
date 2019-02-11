@@ -127,10 +127,10 @@ def load_model(fname):
     return model
 
 def save_prediction(predict_results, fname):
-    f = open(fname)
+    f = open(fname,'w')
     f.write("id,target,\n")
     for i in range(len(predict_results)):
-        f.write(str(i) + "," + str(predict_results[i]))
+        f.write(str(i) + "," + str(predict_results[i]) + "\n")
     f.close()
 
 def collect_model_stats(data, labels, v_data,
