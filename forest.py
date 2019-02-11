@@ -24,12 +24,11 @@ def predict_forest(clf, data, fname):
     predict_results = clf.predict(data)
     save_prediction(predict_results, fname)
 
-data, labels, v_data, v_labels = load_train("data/train_2008.csv", 1000, 4000)
-
-print(len(data[0]))
+train_data, train_labels, v_data, v_labels, test1_data, test2_data = load_all(1000)
+print(len(train_data[0]))
 
 print("Load done!")
-#m = train_forest(data, labels, 10, 1000)
-#save_model(m, 'm1.model')
-m = load_model('m1.model')
-eval_forest(m, data, labels, v_data, v_labels)
+m = train_forest(train_data[:2000], train_labels[:2000], 15, 1000)
+save_model(m, 'submit1.model')
+#m = load_model('m1.model')
+eval_forest(m, train_data[:2000], train_labels[:2000], v_data, v_labels)

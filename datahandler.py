@@ -7,34 +7,83 @@ from sklearn import metrics
 from sklearn import compose
 from sklearn.decomposition import PCA
 import datetime
+from category_handler import get_attribute_list
+import category_encoders as ce
 
-def load_train(fname, n_validate, max_total = -1):
+def load_all(n_validate, verbose=False):
     '''loads, splits, and changes categorical data to categories for
     training data'''
-    X = np.loadtxt(fname, skiprows = 1, delimiter = ",")
-    np.random.shuffle(X)
 
-    data = X[:, 5:-1]
-    cols = get_categorical_cols(data, 100)
-    data = make_categorical(data, cols)
-    data = make_regularized(data)
-    data = data[:max_total]
+    if verbose:
+        print("load...")
+    train_all = np.genfromtxt("data/train_2008.csv", dtype=float, delimiter=',', names=True)
+    test_1 = np.genfromtxt("data/test_2008.csv", dtype=float, delimiter=',', names=True)
+    test_2 = np.genfromtxt("data/test_2012.csv", dtype=float, delimiter=',', names=True)
 
-    test_data = data[:n_validate]
-    test_labels = X[:n_validate, -1]
-    train_data = data[n_validate:]
-    train_labels = X[n_validate:max_total, -1]
+    if verbose:
+        print("shuffle...")
+    np.random.shuffle(train_all)
 
-    return train_data, train_labels, test_data, test_labels
+    if verbose:
+        print("get categories...")
+    cont_names = get_attribute_list("cat_continuous.dat")
+    cat_names = get_attribute_list("cat_categorical.dat")
+    uns_names = get_attribute_list("cat_unsure.dat")
+    irr_names = get_attribute_list("cat_irrelevant.dat")
 
-def load_predict(fname, cols):
-    '''loads data to predict on'''
-    data = np.loadtxt(fname, skiprows = 1, delimiter = ",")
-    data = data[:, 5:]
-    data = make_categorical(data, cols)
-    data = make_regularized(data)
+    # get + format categorical data
+    train_cat = np.array(train_all[cat_names].tolist())
+    test1_cat = np.array(test_1[cat_names].tolist())
+    test2_cat = np.array(test_2[cat_names].tolist())
 
-    return data
+    train_len = len(train_cat)
+    test1_len = len(test1_cat)
+    test2_len = len(test2_cat)
+
+    if verbose:
+        print(train_len, test1_len, test2_len)
+        print(len(train_cat[0]), len(test1_cat[0]), len(test2_cat[0]))
+
+    full_cat = np.concatenate((train_cat, test1_cat))
+    full_cat = np.concatenate((full_cat, test2_cat))
+
+    if verbose:
+        print(len(full_cat), len(full_cat[0]))
+
+    full_cat = make_categorical(full_cat)
+    print(full_cat.shape)
+
+    train_cat = full_cat[:train_len]
+    test1_cat = full_cat[train_len:train_len + test1_len]
+    test2_cat = full_cat[train_len + test1_len:train_len + test1_len + test2_len]
+
+    if verbose:
+        print("get continuous...")
+    # get + format continuous data
+    train_cont = make_regularized(np.array(train_all[cont_names].tolist()))
+    test1_cont = make_regularized(np.array(test_1[cont_names].tolist()))
+    test2_cont = make_regularized(np.array(test_2[cont_names].tolist()))
+
+    if verbose:
+        print("zip...")
+    # zip data
+
+    print(train_cat.shape, train_cont.shape)
+    print(train_cat)
+    print(train_cont)
+    train_data = np.hstack((train_cat, train_cont))
+    test1_data = np.hstack((test1_cat, test1_cont))
+    test2_data = np.hstack((test2_cat, test2_cont))
+
+    train_labels = train_all["target"]
+
+    v_data = train_data[:n_validate]
+    v_labels = train_labels[:n_validate]
+    train_data = train_data[n_validate:]
+    train_labels = train_labels[n_validate:]
+
+    # return data
+    return train_data, train_labels, v_data, v_labels, test1_data, test2_data
 
 def classification_err(y, real_y):
     """gets classification error given regression y and real y"""
@@ -50,22 +99,10 @@ def auc_err(y, real_y):
     """gets area under curve error given regression y and real y"""
     return metrics.roc_auc_score(real_y, y)
 
-def get_categorical_cols(data, threshold):
-    """gets columns which should be categorical data"""
-    categoricals = []
-    for i in range(len(data.T)):
-        if len(np.unique(data.T[i])) < threshold:
-            categoricals.append(i)
-    return categoricals
-
-def make_categorical(data, categoricals):
-    """converts categorical data to one-hot encoded"""
-    ct = compose.make_column_transformer((categoricals, preprocessing.OneHotEncoder(categories='auto')))
-    x = ct.fit_transform(data).toarray()
-    return x
 
 def reg(data):
     """regularizes column"""
+    data = data.astype(np.float)
     if np.std(data) > 0:
         return (data - np.average(data))/(np.std(data))
     return data - np.average(data)
@@ -74,6 +111,10 @@ def make_regularized(data):
     """regularizes all data"""
     X = np.insert(np.apply_along_axis(reg,0,data), 0, 1, axis=1)
     return X
+
+def make_categorical(data):
+    enc =  preprocessing.OneHotEncoder(categories='auto')
+    return enc.fit_transform(data).todense()
 
 def save_model(model, fname):
     """saves given model to file"""
@@ -92,12 +133,9 @@ def save_prediction(predict_results, fname):
         f.write(str(i) + "," + str(predict_results[i]))
     f.close()
 
-    
-   
-
-def collect_model_stats(data, labels, v_data, 
+def collect_model_stats(data, labels, v_data,
         v_labels, clf, clf_descriptor, verbose = True):
-    
+
     train_result = clf.predict(data)
     validate_result = clf.predict(v_data)
     cat_result = np.floor(2 * validate_result)
