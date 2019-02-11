@@ -38,12 +38,17 @@ def verify():
 
     newlist.sort()
 
+    baseline = None
+    with open('train_2008.csv') as f:
+        baseline = re.split(',|\\n', f.readline())
+    baseline = [i for i in baseline if i != ""]
 
-    baseline = get_attribute_list("categoriesbaseline.dat")
+
+    # baseline = get_attribute_list("categoriesbaseline.dat")
     baseline.sort()
     
     if (len(baseline) != len(newlist)):
-        print("missing terms")
+        print("number of missing terms: " + str(len(baseline) - len(newlist)))
 
     for i in baseline:
         if i not in newlist:
@@ -52,8 +57,7 @@ def verify():
         if i not in baseline:
             print("ERROR: newlist misspell: " + str(i))
 
-    print("if no error messages, all category headers are verified")
-
+    print("should only be 1 missing target. all category headers are verified if no error otherwise")
 
 
 verify()
