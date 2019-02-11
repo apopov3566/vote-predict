@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import pickle
 from sklearn import preprocessing
 from sklearn.ensemble import RandomForestRegressor
@@ -7,8 +6,7 @@ from sklearn import metrics
 from sklearn import compose
 from sklearn.decomposition import PCA
 import datetime
-from category_handler import get_attribute_list
-import category_encoders as ce
+from sklearn.model_selection import RandomizedSearchCV
 
 def load_all(n_validate, verbose=False):
     '''loads, splits, and changes categorical data to categories for
@@ -51,7 +49,6 @@ def load_all(n_validate, verbose=False):
         print(len(full_cat), len(full_cat[0]))
 
     full_cat = make_categorical(full_cat)
-    print(full_cat.shape)
 
     train_cat = full_cat[:train_len]
     test1_cat = full_cat[train_len:train_len + test1_len]
@@ -68,9 +65,6 @@ def load_all(n_validate, verbose=False):
         print("zip...")
     # zip data
 
-    print(train_cat.shape, train_cont.shape)
-    print(train_cat)
-    print(train_cont)
     train_data = np.hstack((train_cat, train_cont))
     test1_data = np.hstack((test1_cat, test1_cont))
     test2_data = np.hstack((test2_cat, test2_cont))
@@ -128,7 +122,7 @@ def load_model(fname):
 
 def save_prediction(predict_results, fname):
     f = open(fname,'w')
-    f.write("id,target,\n")
+    f.write("id,target\n")
     for i in range(len(predict_results)):
         f.write(str(i) + "," + str(predict_results[i]) + "\n")
     f.close()
