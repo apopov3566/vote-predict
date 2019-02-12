@@ -47,8 +47,6 @@ random_grid = {'n_estimators': n_estimators,
                'min_samples_split': min_samples_split,
                'min_samples_leaf': min_samples_leaf,
                'bootstrap': bootstrap}
-pprint(random_grid)
-
 
 rf = RandomForestRegressor()
 # Random search of parameters, using 3 fold cross validation,
