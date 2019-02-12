@@ -1,3 +1,5 @@
+from datahandler import *
+
 def eval_forest(clf, data, labels, v_data, v_labels):
     train_result = clf.predict(data)
     validate_result = clf.predict(v_data)
