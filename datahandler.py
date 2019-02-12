@@ -7,6 +7,7 @@ from sklearn import compose
 from sklearn.decomposition import PCA
 import datetime
 from sklearn.model_selection import RandomizedSearchCV
+from category_handler import get_attribute_list
 
 def load_all(n_validate, verbose=False):
     '''loads, splits, and changes categorical data to categories for
